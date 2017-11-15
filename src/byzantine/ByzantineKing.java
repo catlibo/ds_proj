@@ -3,10 +3,7 @@ package byzantine;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.rmi.registry.Registry;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -39,7 +36,7 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
 
     long startTime;
 
-    Request lockRequest = null;
+    Integer[] firstTransfer;
     /**
      * Call the constructor to create a Byzantine peer.
      * The hostnames of all the Byzantine peers (including this one)
@@ -69,6 +66,7 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
         done = false;
 
         receivedProposal = new HashMap<Integer, Integer>();
+        firstTransfer = new Integer[peers.length];
         //this.startTime = startTime;
 
         // register peers, do not modify this part
@@ -109,6 +107,8 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
                 callReply = stub.Round2(req);
             else if(rmi.equals("Round3"))
                 callReply = stub.Round3(req);
+            else if(rmi.equals("Receive"))
+                callReply = stub.Receive(req);
             else
                 System.out.println("Wrong parameters!");
         } catch(Exception e){
@@ -296,9 +296,38 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
         return new Response(true);
     }
 
+    public void firstTransfer(int proposalValue, long startTime){
+        // Your code here
+        this.mutex.lock();
+        //System.out.println("start lock:" + Thread.currentThread());
+        long transferTime = System.currentTimeMillis();
+        this.mutex.unlock();
+        //System.out.println("start unlock:" + Thread.currentThread());
+
+        for (int i = 0; i < this.peers.length; i++) {
+            if (i != this.me) {
+                Request req = new Request(proposalValue, this.me, "Receive", 1);
+                Response rsp = this.Call("Receive", req, i);
+            }
+            else firstTransfer[i] = proposalValue;
+        }
+
+        while(transferTime + pulse > System.currentTimeMillis()){
+            try {
+                Thread.sleep(500);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public ArrayList<Integer> getFirstTransfer(){
+        return new ArrayList<Integer>(Arrays.asList(firstTransfer));
+    }
+
     public Response Receive(Request req){
         this.mutex.lock();
-
+        this.firstTransfer[req.me] = req.v;
         this.mutex.unlock();
         return new Response(true);
     }

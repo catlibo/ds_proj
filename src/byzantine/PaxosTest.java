@@ -2,6 +2,10 @@ package byzantine;
 
 import org.junit.Test;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import static org.junit.Assert.assertFalse;
 
 /**
@@ -117,6 +121,29 @@ public class PaxosTest {
                 }
             }
             System.out.print(generals[i].Status().v + "\n");
+        }
+
+        Object a = generals[0].Status().v;
+    }
+
+    @Test
+    public void TestBetaNode(){
+
+        final int npaxos = 5;
+        ByzantineKing[] generals = initByzantineKings(npaxos);
+        BetaNode[] nodes = new BetaNode[npaxos];
+        ArrayList<Integer> ballot = new ArrayList<>(Arrays.asList(new Integer[] { 1, 2, 3 }));
+        for(int i = 0; i < npaxos; i++){
+            nodes[i] = new BetaNode(ballot, generals[i], npaxos, i);
+        }
+
+        long startTime = System.currentTimeMillis();
+        for(int i = 0; i < npaxos; i++){
+            nodes[i].firstTransfer(startTime);
+        }
+
+        for(int i = 0; i < npaxos; i++){
+            nodes[i].firstTransferResult();
         }
 
         Object a = generals[0].Status().v;
