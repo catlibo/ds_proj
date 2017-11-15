@@ -38,7 +38,7 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
 
     long startTime;
 
-
+    Request lockRequest = null;
     /**
      * Call the constructor to create a Byzantine peer.
      * The hostnames of all the Byzantine peers (including this one)
@@ -184,7 +184,7 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
     public void run(){
         //Your code here
 
-        for (this.phase = 0; this.phase < (this.f) ; this.phase++) {
+        for (this.phase = 0; this.phase < (this.f+1) ; this.phase++) {
             for (int i = 0; i < this.peers.length; i++) {
                 if (i != this.me) {
                     Request req = new Request(this.values.get(this.me), this.me, "Round1", 1);
@@ -235,6 +235,17 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
             }
             this.startTime = this.startTime + 3000;
 
+            receivedProposal = new HashMap<Integer, Integer>();
+
+            while(this.startTime + 5000 > System.currentTimeMillis()){
+                try {
+                    Thread.sleep(500);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            this.startTime = this.startTime + 5000;
+
         }
 
         this.mutex.lock();
@@ -267,7 +278,7 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
         }
 
         if(receivedProposal.get(proposedValue) >= this.f + 1){
-            this.values.set(this.me, this.my_value);
+            this.values.set(this.me, proposedValue);
         }
 
         this.mutex.unlock();

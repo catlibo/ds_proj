@@ -109,7 +109,7 @@ public class PaxosTest {
             generals[i].Start(startTime, i);
         }
         for(int i = 0; i < npaxos; i++){
-            while(generals[i].done != true){
+            while(generals[i].Status().state != State.Decided){
                 try {
                     Thread.sleep(1000);
                 } catch (Exception e) {
