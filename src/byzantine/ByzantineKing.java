@@ -271,7 +271,7 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
         this.mutex.lock();
 
         int proposedValue = req.v;
-        if (receivedProposal.containsKey(proposedValue)){
+        if (!receivedProposal.containsKey(proposedValue)){
             receivedProposal.put(proposedValue, 1);
         }else{
             receivedProposal.put(proposedValue, receivedProposal.get(proposedValue) + 1);
@@ -293,7 +293,7 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
         int king_value = req.v;
         Integer count = receivedProposal.get(this.values.get(this.me));
         if (count != null && count >= this.peers.length - this.f) {
-            this.values.set(this.me, this.my_value);
+            this.values.set(this.me, this.values.get(this.me));
         } else {
             this.values.set(this.me, king_value);
         }
