@@ -16,6 +16,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class ByzantineKing implements ByzantineKingRMI, Runnable{
 
     public final static int default_value = 0;
+    public final static int pulse = 1000;
 
     ReentrantLock mutex;
     String[] peers; // hostname
@@ -145,25 +146,14 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
     public void Start(long startTime, int proposalValue){
         // Your code here
         this.mutex.lock();
+        System.out.println("start lock:" + Thread.currentThread());
         this.startTime = startTime;
         this.my_value = proposalValue;
         this.values.set(this.me, proposalValue);
         this.mutex.unlock();
+        System.out.println("start unlock:" + Thread.currentThread());
         Thread t = new Thread(this);
         t.start();
-    }
-
-    public int majority(List<Integer> nums) {
-        int count=0, ret = 0;
-        for (int num: nums) {
-            if (count==0)
-                ret = num;
-            if (num!=ret)
-                count--;
-            else
-                count++;
-        }
-        return ret;
     }
 
     public Integer enoughInitial(ArrayList<Integer> nums) {
@@ -192,14 +182,14 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
                 }
             }
 
-            while(this.startTime + 3000 > System.currentTimeMillis()){
+            while(this.startTime + pulse > System.currentTimeMillis()){
                 try {
                     Thread.sleep(500);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
-            this.startTime = this.startTime + 3000;
+            this.startTime = this.startTime + pulse;
 
 
             Integer enoughInit = enoughInitial(this.values);
@@ -210,14 +200,14 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
                 }
             }
 
-            while(this.startTime + 3000 > System.currentTimeMillis()){
+            while(this.startTime + pulse > System.currentTimeMillis()){
                 try {
                     Thread.sleep(500);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
-            this.startTime = this.startTime + 3000;
+            this.startTime = this.startTime + pulse;
 
             if (this.phase == this.me) {
                 for (int i = 0; i < this.peers.length; i++) {
@@ -226,25 +216,25 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
                 }
             }
 
-            while(this.startTime + 3000 > System.currentTimeMillis()){
+            while(this.startTime + pulse > System.currentTimeMillis()){
                 try {
                     Thread.sleep(500);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
-            this.startTime = this.startTime + 3000;
+            this.startTime = this.startTime + pulse;
 
             receivedProposal = new HashMap<Integer, Integer>();
 
-            while(this.startTime + 5000 > System.currentTimeMillis()){
+            while(this.startTime + pulse > System.currentTimeMillis()){
                 try {
                     Thread.sleep(500);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
-            this.startTime = this.startTime + 5000;
+            this.startTime = this.startTime + pulse;
 
         }
 
@@ -258,20 +248,22 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
     public Response Round1(Request req){
         // your code here
         this.mutex.lock();
+        if (this.me == 0) System.out.println("Round1 lock:" + Thread.currentThread());
 
         int j = req.me;
         this.values.set(j, req.v);
 
         this.mutex.unlock();
+        if (this.me == 0) System.out.println("Round1 unlock:" + Thread.currentThread());
         return new Response(true);
     }
 
     public Response Round2(Request req){
         // your code here
         this.mutex.lock();
-
+        if (this.me == 0) System.out.println("Round2 lock:" + Thread.currentThread());
         int proposedValue = req.v;
-        if (receivedProposal.containsKey(proposedValue)){
+        if (!receivedProposal.containsKey(proposedValue)){
             receivedProposal.put(proposedValue, 1);
         }else{
             receivedProposal.put(proposedValue, receivedProposal.get(proposedValue) + 1);
@@ -282,13 +274,14 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
         }
 
         this.mutex.unlock();
+        if (this.me == 0) System.out.println("Round2 unlock:" + Thread.currentThread());
         return new Response(true);
     }
 
     public Response Round3(Request req){
         // your code here
         this.mutex.lock();
-
+        if (this.me == 0) System.out.println("Round3 lock:" + this.me);
         int j = req.me;
         int king_value = req.v;
         Integer count = receivedProposal.get(this.values.get(this.me));
@@ -299,6 +292,7 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
         }
 
         this.mutex.unlock();
+        if (this.me == 0) System.out.println("Round3 unlock:" + this.me);
         return new Response(true);
     }
 
