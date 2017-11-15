@@ -2,7 +2,6 @@ package byzantine;
 
 import org.junit.Test;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -91,7 +90,7 @@ public class PaxosTest {
         }
 
         for(int i = 0; i < npaxos; i++){
-            pxa[i] = new ByzantineKing(i, peers, ports, 0, 1);
+            pxa[i] = new ByzantineKing(i, peers, ports, 0, 1, 0);
         }
         return pxa;
     }
@@ -149,4 +148,10 @@ public class PaxosTest {
         Object a = generals[0].Status().v;
     }
 
+
+    @Test
+    public void TestAlpha() {
+        int[] tops = {1,0,2,2,1,2,2};
+        AlphaByzantine.alpha(tops, 1);
+    }
 }
