@@ -27,6 +27,7 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
     AtomicBoolean unreliable;// for testing
 
     // Your data here
+    int tag;// 0: good; 1: bad_1
     int f;
     int phase;
     int my_value;
@@ -42,7 +43,7 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
      * The hostnames of all the Byzantine peers (including this one)
      * are in peers[]. The ports are in ports[].
      */
-    public ByzantineKing(int me, String[] peers, int[] ports, int propose_value, int f){
+    public ByzantineKing(int me, String[] peers, int[] ports, int propose_value, int f, int tag){
 
         this.me = me;
         this.peers = peers;
@@ -52,6 +53,7 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
         this.unreliable = new AtomicBoolean(false);
 
         // Your initialization code here
+        this.tag = tag;
         this.f = f;
         this.phase = -1;
         this.my_value = propose_value;
@@ -143,6 +145,10 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
         //run();
     }
 
+    public static int generateRandom(int b) {
+        return (int) (Math.random() * b);
+    }
+
     public void Start(long startTime, int proposalValue){
         // Your code here
         this.mutex.lock();
@@ -177,7 +183,12 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
         for (this.phase = 0; this.phase < (this.f+1) ; this.phase++) {
             for (int i = 0; i < this.peers.length; i++) {
                 if (i != this.me) {
-                    Request req = new Request(this.values.get(this.me), this.me, "Round1", 1);
+                    Request req;
+                    if (this.tag == 1) { //bad
+                        req = new Request(ByzantineKing.generateRandom(3), this.me, "Round1", 1);
+                    } else {
+                        req = new Request(this.values.get(this.me), this.me, "Round1", 1);
+                    }
                     Response rsp = this.Call("Round1", req, i);
                 }
             }
@@ -195,7 +206,12 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
             Integer enoughInit = enoughInitial(this.values);
             if(enoughInit!= null){
                 for (int i = 0; i < this.peers.length; i++) {
-                    Request req = new Request(enoughInit, this.me, "Round2", 2);
+                    Request req;
+                    if (this.tag == 1) { //bad
+                        req = new Request(ByzantineKing.generateRandom(3), this.me, "Round2", 2);
+                    } else {
+                        req = new Request(enoughInit, this.me, "Round2", 2);
+                    }
                     Response rsp = this.Call("Round2", req, i);
                 }
             }
@@ -211,7 +227,12 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
 
             if (this.phase == this.me) {
                 for (int i = 0; i < this.peers.length; i++) {
-                    Request req = new Request(this.values.get(this.me), this.me, "Round3", 3);
+                    Request req;
+                    if (this.tag == 1) { //bad
+                        req = new Request(ByzantineKing.generateRandom(3), this.me, "Round3", 3);
+                    } else {
+                        req = new Request(this.values.get(this.me), this.me, "Round3", 3);
+                    }
                     Response rsp = this.Call("Round3", req, i);
                 }
             }
