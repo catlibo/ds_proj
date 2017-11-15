@@ -2,10 +2,10 @@ package byzantine;
 
 import org.junit.Test;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 /**
@@ -133,8 +133,9 @@ public class PaxosTest {
         ByzantineKing[] generals = initByzantineKings(npaxos);
         BetaNode[] nodes = new BetaNode[npaxos];
         ArrayList<Integer> ballot = new ArrayList<>(Arrays.asList(new Integer[] { 1, 2, 3 }));
+        ArrayList<Integer> ballot2 = new ArrayList<>(Arrays.asList(new Integer[] { 3, 2, 1 }));
         for(int i = 0; i < npaxos; i++){
-            nodes[i] = new BetaNode(ballot, generals[i], npaxos, i);
+            nodes[i] = new BetaNode(i == 0 ? ballot: ballot2, generals[i], npaxos, i);
         }
 
         long startTime = System.currentTimeMillis();
@@ -143,7 +144,59 @@ public class PaxosTest {
         }
 
         for(int i = 0; i < npaxos; i++){
-            nodes[i].firstTransferResult();
+            nodes[i].transferResult(1);
+        }
+
+        for(int i = 0; i < npaxos; i++){
+            startTime = System.currentTimeMillis();
+            for(int j = 0; j < npaxos; j++){
+                nodes[j].agreeOn(i, startTime, 1);
+            }
+
+            try {
+                Thread.sleep(3000);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            for(int j = 0; j < npaxos; j++){
+                nodes[j].getConsensus(i, 1);
+            }
+        }
+
+        for(int j = 0; j < npaxos; j++){
+            nodes[j].getDiscard();
+        }
+
+        startTime = System.currentTimeMillis();
+        for(int i = 0; i < npaxos; i++){
+            nodes[i].secondTransfer(startTime);
+        }
+
+        for(int i = 0; i < npaxos; i++){
+            nodes[i].transferResult(2);
+        }
+
+        for(int i = 0; i < npaxos; i++){
+            startTime = System.currentTimeMillis();
+            for(int j = 0; j < npaxos; j++){
+                nodes[j].agreeOn(i, startTime, 2);
+            }
+
+            try {
+                Thread.sleep(3000);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            for(int j = 0; j < npaxos; j++){
+                nodes[j].getConsensus(i, 2);
+            }
+        }
+
+        for(int j = 0; j < npaxos; j++){
+            nodes[j].getTally();
+            assertEquals(3, nodes[j].leader);
         }
 
         Object a = generals[0].Status().v;

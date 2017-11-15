@@ -13,7 +13,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class ByzantineKing implements ByzantineKingRMI, Runnable{
 
     public final static int default_value = 0;
-    public final static int pulse = 1000;
+    public final static int pulse = 200;
 
     ReentrantLock mutex;
     String[] peers; // hostname
@@ -184,7 +184,7 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
 
             while(this.startTime + pulse > System.currentTimeMillis()){
                 try {
-                    Thread.sleep(500);
+                    Thread.sleep(100);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -202,7 +202,7 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
 
             while(this.startTime + pulse > System.currentTimeMillis()){
                 try {
-                    Thread.sleep(500);
+                    Thread.sleep(100);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -218,7 +218,7 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
 
             while(this.startTime + pulse > System.currentTimeMillis()){
                 try {
-                    Thread.sleep(500);
+                    Thread.sleep(100);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -229,7 +229,7 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
 
             while(this.startTime + pulse > System.currentTimeMillis()){
                 try {
-                    Thread.sleep(500);
+                    Thread.sleep(100);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -314,14 +314,14 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
 
         while(transferTime + pulse > System.currentTimeMillis()){
             try {
-                Thread.sleep(500);
+                Thread.sleep(100);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
     }
 
-    public ArrayList<Integer> getFirstTransfer(){
+    public ArrayList<Integer> getTransfer(){
         return new ArrayList<Integer>(Arrays.asList(firstTransfer));
     }
 
