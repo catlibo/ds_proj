@@ -146,12 +146,12 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
     public void Start(long startTime, int proposalValue){
         // Your code here
         this.mutex.lock();
-        System.out.println("start lock:" + Thread.currentThread());
+        //System.out.println("start lock:" + Thread.currentThread());
         this.startTime = startTime;
         this.my_value = proposalValue;
         this.values.set(this.me, proposalValue);
         this.mutex.unlock();
-        System.out.println("start unlock:" + Thread.currentThread());
+        //System.out.println("start unlock:" + Thread.currentThread());
         Thread t = new Thread(this);
         t.start();
     }
@@ -248,20 +248,20 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
     public Response Round1(Request req){
         // your code here
         this.mutex.lock();
-        if (this.me == 0) System.out.println("Round1 lock:" + Thread.currentThread());
+        //if (this.me == 0) System.out.println("Round1 lock:" + Thread.currentThread());
 
         int j = req.me;
         this.values.set(j, req.v);
 
         this.mutex.unlock();
-        if (this.me == 0) System.out.println("Round1 unlock:" + Thread.currentThread());
+        //if (this.me == 0) System.out.println("Round1 unlock:" + Thread.currentThread());
         return new Response(true);
     }
 
     public Response Round2(Request req){
         // your code here
         this.mutex.lock();
-        if (this.me == 0) System.out.println("Round2 lock:" + Thread.currentThread());
+        //if (this.me == 0) System.out.println("Round2 lock:" + Thread.currentThread());
         int proposedValue = req.v;
         if (!receivedProposal.containsKey(proposedValue)){
             receivedProposal.put(proposedValue, 1);
@@ -274,14 +274,14 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
         }
 
         this.mutex.unlock();
-        if (this.me == 0) System.out.println("Round2 unlock:" + Thread.currentThread());
+        //if (this.me == 0) System.out.println("Round2 unlock:" + Thread.currentThread());
         return new Response(true);
     }
 
     public Response Round3(Request req){
         // your code here
         this.mutex.lock();
-        if (this.me == 0) System.out.println("Round3 lock:" + this.me);
+        //if (this.me == 0) System.out.println("Round3 lock:" + this.me);
         int j = req.me;
         int king_value = req.v;
         Integer count = receivedProposal.get(this.values.get(this.me));
@@ -292,7 +292,7 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
         }
 
         this.mutex.unlock();
-        if (this.me == 0) System.out.println("Round3 unlock:" + this.me);
+        //if (this.me == 0) System.out.println("Round3 unlock:" + this.me);
         return new Response(true);
     }
 
