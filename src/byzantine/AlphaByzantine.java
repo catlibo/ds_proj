@@ -22,7 +22,7 @@ public class AlphaByzantine {
         }
 
         for(int i = 0; i < nbyzantine; i++) {
-            bgs[i] = new ByzantineKing(i, peers, ports, 0, 1, 0);
+            bgs[i] = new ByzantineKing(i, peers, ports, 0, 0);
             if (i <= f_index) {
                 bgs[i].tag = 1;
             }
