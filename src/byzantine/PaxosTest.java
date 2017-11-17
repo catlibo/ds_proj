@@ -234,4 +234,12 @@ public class PaxosTest {
         int[] tops = {1,0,2,2,1,2,2};
         AlphaByzantine.alpha(tops, 1);
     }
+
+    @Test
+    public void permutationUtilTest() {
+        int[] ranks = {1,2,3,4,5};
+        ArrayList<ArrayList<Integer>> allSet = PermutationUtil.permute(ranks);
+
+        return;
+    }
 }
