@@ -215,13 +215,13 @@ public class PaxosTest {
             nodes[i] = new BetaNode(i == 0 ? ballot: ballot2, generals[i], npaxos, i);
         }
 
-        for(int j = 0; j < ballot.size(); j++){
+        for(int j = 0; j < ballot.size(); j++) {
             long startTime = System.currentTimeMillis();
-            for(int i = 0; i < npaxos; i++){
+            for (int i = 0; i < npaxos; i++) {
                 nodes[i].generalTransfer(j, startTime);
             }
 
-            for(int i = 0; i < npaxos; i++){
+            for (int i = 0; i < npaxos; i++) {
                 nodes[i].generalResult(j);
             }
         }
@@ -236,10 +236,47 @@ public class PaxosTest {
     }
 
     @Test
+    public void KYScoreTest() {
+        final int npaxos = 5;
+        ByzantineKing[] generals = initByzantineKings(npaxos);
+        BetaNode[] nodes = new BetaNode[npaxos];
+        ArrayList<Integer> ballot = new ArrayList<>(Arrays.asList(new Integer[] { 1, 2, 3 }));
+        ArrayList<Integer> ballot2 = new ArrayList<>(Arrays.asList(new Integer[] { 3, 2, 1 }));
+        for(int i = 0; i < npaxos; i++){
+            nodes[i] = new BetaNode(i == 0 ? ballot: ballot2, generals[i], npaxos, i);
+        }
+
+        for(int j = 0; j < ballot.size(); j++) {
+            long startTime = System.currentTimeMillis();
+            for (int i = 0; i < npaxos; i++) {
+                nodes[i].generalTransfer(j, startTime);
+            }
+
+            for (int i = 0; i < npaxos; i++) {
+                nodes[i].generalResult(j);
+            }
+        }
+
+        for (int i = 0; i < npaxos; i++) {
+            nodes[i].rankToBallot();
+        }
+
+        ArrayList<Integer> scores = new ArrayList<>();
+
+        int[] ranks = {1,2,3};
+        ArrayList<ArrayList<Integer>> allSet = PermutationUtil.permute(ranks);
+
+        for (int i = 0; i < allSet.size(); i++){
+            scores.add(KYScore.getKYScore(allSet.get(i), nodes[0].TotalBallot));
+        }
+
+        return;
+    }
+
+    @Test
     public void permutationUtilTest() {
         int[] ranks = {1,2,3,4,5};
         ArrayList<ArrayList<Integer>> allSet = PermutationUtil.permute(ranks);
-
         return;
     }
 }

@@ -12,6 +12,7 @@ public class BetaNode {
     ArrayList<Integer> T;
     ArrayList<Integer> TFirst;
     ArrayList<ArrayList<Integer>> Total;
+    ArrayList<ArrayList<Integer>> TotalBallot;
     ArrayList<Integer> Discard;
     int me;
     int leader;
@@ -26,6 +27,7 @@ public class BetaNode {
         this.Discard = new ArrayList<>();
         this.leader = -1;
         this.Total = new ArrayList<>(new ArrayList<>());
+        this.TotalBallot = new ArrayList<>(new ArrayList<>());
 
         for(int i =0; i < numPeers; i++){
             if (i != me) {
@@ -36,6 +38,7 @@ public class BetaNode {
                 T.add(vote.get(vote.size() - 1));
                 TFirst.add(vote.get(0));
             }
+            this.TotalBallot.add(vote);
         }
 
         for(int j = 0; j < vote.size(); j++){
@@ -76,6 +79,26 @@ public class BetaNode {
     public void transferResult(int round){
         if(round == 1)this.T = myByzantine.getTransfer();
         else this.TFirst = myByzantine.getTransfer();
+    }
+
+    public void agreeOnRank(int j, long startTime, int rank){
+        myByzantine.Start(startTime ,Total.get(rank).get(j));
+    }
+
+    public void getConsensusRank(int j, int rank){
+        ArrayList<Integer> temp = Total.get(rank);
+        temp.set(j, myByzantine.values.get(me));
+        Total.set(rank, temp);
+    }
+
+    public void rankToBallot(){
+        for (int i = 0; i < numPeers; i++){
+            ArrayList<Integer> temp = new ArrayList<>();
+            for (int j = 0; j <vote.size() ;j++){
+                temp.add(Total.get(j).get(i));
+            }
+            this.TotalBallot.set(i, temp);
+        }
     }
 
     public void agreeOn(int j, long startTime, int round){
