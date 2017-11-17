@@ -11,6 +11,7 @@ public class BetaNode {
     ArrayList<Integer> vote;
     ArrayList<Integer> T;
     ArrayList<Integer> TFirst;
+    ArrayList<ArrayList<Integer>> Total;
     ArrayList<Integer> Discard;
     int me;
     int leader;
@@ -24,6 +25,7 @@ public class BetaNode {
         this.TFirst = new ArrayList<>();
         this.Discard = new ArrayList<>();
         this.leader = -1;
+        this.Total = new ArrayList<>(new ArrayList<>());
 
         for(int i =0; i < numPeers; i++){
             if (i != me) {
@@ -35,6 +37,27 @@ public class BetaNode {
                 TFirst.add(vote.get(0));
             }
         }
+
+        for(int j = 0; j < vote.size(); j++){
+            ArrayList<Integer> temp = new ArrayList<>();
+            for(int i =0; i < numPeers; i++){
+                if (i != me) {
+                    temp.add(-1);
+                }
+                else {
+                    temp.add(vote.get(j));
+                }
+            }
+            Total.add(temp);
+        }
+    }
+
+    public void generalTransfer(int rank, long startTime){
+        myByzantine.firstTransfer(Total.get(rank).get(me), startTime);
+    }
+
+    public void generalResult(int rank){
+        Total.set(rank, myByzantine.getTransfer());
     }
 
     public void firstTransfer(long startTime){

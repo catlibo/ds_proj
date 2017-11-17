@@ -204,6 +204,32 @@ public class PaxosTest {
 
 
     @Test
+    public void TestBetaNodeTotal(){
+
+        final int npaxos = 5;
+        ByzantineKing[] generals = initByzantineKings(npaxos);
+        BetaNode[] nodes = new BetaNode[npaxos];
+        ArrayList<Integer> ballot = new ArrayList<>(Arrays.asList(new Integer[] { 1, 2, 3 }));
+        ArrayList<Integer> ballot2 = new ArrayList<>(Arrays.asList(new Integer[] { 3, 2, 1 }));
+        for(int i = 0; i < npaxos; i++){
+            nodes[i] = new BetaNode(i == 0 ? ballot: ballot2, generals[i], npaxos, i);
+        }
+
+        for(int j = 0; j < ballot.size(); j++){
+            long startTime = System.currentTimeMillis();
+            for(int i = 0; i < npaxos; i++){
+                nodes[i].generalTransfer(j, startTime);
+            }
+
+            for(int i = 0; i < npaxos; i++){
+                nodes[i].generalResult(j);
+            }
+        }
+
+        Object a = generals[0].Status().v;
+    }
+
+    @Test
     public void TestAlpha() {
         int[] tops = {1,0,2,2,1,2,2};
         AlphaByzantine.alpha(tops, 1);
