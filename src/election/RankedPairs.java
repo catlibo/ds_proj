@@ -152,7 +152,7 @@ public class RankedPairs {
     }
 
     public static void main(String[] args) {
-        int[][] tbs = {{1,2,0}, {1,2,0}, {2,1,0}, {1,0,2}, {2,0,1}, {2,1,0}, {2,0,1}};
+        int[][] tbs = {{1,2,0}, {1,2,0}, {1,0,2}, {1,2,0}, {2,0,1}, {2,0,1}, {2,0,1}};
         RankedPairs r = new RankedPairs(tbs, 3);
         System.out.println(Arrays.toString(r.getRank()));
     }
