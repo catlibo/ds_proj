@@ -1,12 +1,16 @@
 package byzantine;
 
+import election.BordaCount;
+import election.RankedPairs;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.stream.DoubleStream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
 
 /**
  * This is a subset of entire test cases
@@ -92,6 +96,39 @@ public class PaxosTest {
 
         for(int i = 0; i < npaxos; i++){
             pxa[i] = new ByzantineKing(i, peers, ports, 0, 1, 0);
+        }
+        return pxa;
+    }
+
+    private ByzantineKing[] initByzantineKings(int npaxos, ArrayList<Integer> failNodes){
+        String host = "127.0.0.1";
+        String[] peers = new String[npaxos];
+        int[] ports = new int[npaxos];
+        ByzantineKing[] pxa = new ByzantineKing[npaxos];
+        for(int i = 0 ; i < npaxos; i++){
+            ports[i] = 1100+i;
+            peers[i] = host;
+        }
+
+        for(int i = 0; i < npaxos; i++){
+            int tag = (failNodes.contains(i)) ? 1 : 0;
+            pxa[i] = new ByzantineKing(i, peers, ports, 0, failNodes.size(), tag);
+        }
+        return pxa;
+    }
+
+    private ByzantineKing[] initByzantineKings(int npaxos, int f){
+        String host = "127.0.0.1";
+        String[] peers = new String[npaxos];
+        int[] ports = new int[npaxos];
+        ByzantineKing[] pxa = new ByzantineKing[npaxos];
+        for(int i = 0 ; i < npaxos; i++){
+            ports[i] = 1100+i;
+            peers[i] = host;
+        }
+
+        for(int i = 0; i < npaxos; i++){
+            pxa[i] = new ByzantineKing(i, peers, ports, 0, f, 0);
         }
         return pxa;
     }
@@ -276,9 +313,277 @@ public class PaxosTest {
     }
 
     @Test
+    public void resultAlphaScoreTest() {
+        final int npaxos = 16;
+        int key = 7;
+        int fail = 5;
+        int[] ranks = new int[key];
+        for (int i = 0; i< key; i ++) ranks[i] = i;
+        ArrayList<ArrayList<Integer>> allSet = PermutationUtil.permute(ranks);
+        ArrayList<Integer> offsets = new ArrayList<>();
+        ByzantineKing[] generals = initByzantineKings(npaxos, fail);
+
+        for(int testRun = 0; testRun <10; testRun ++){
+            ArrayList<ArrayList<Integer>> goodBallot = new ArrayList<>(new ArrayList<>());
+
+            ArrayList<Integer> failNodes = new ArrayList<Integer>();
+            while (failNodes.size() < fail){
+                int a = PermutationUtil.generateRandom(npaxos);
+                if(!failNodes.contains(a)) failNodes.add(a);
+            }
+
+            BetaNode[] nodes = new BetaNode[npaxos];
+            for(int i = 0; i < npaxos; i++){
+                ArrayList<Integer> newBallot = allSet.get(PermutationUtil.generateRandom(allSet.size()));
+                if (!failNodes.contains(i)){
+                    goodBallot.add(newBallot);
+                    generals[i].tag = 0 ;
+                } else {
+                    generals[i].tag = 1 ;
+                }
+                nodes[i] = new BetaNode(newBallot, generals[i], npaxos, i);
+            }
+
+            long startTime = System.currentTimeMillis();
+            for(int i = 0; i < npaxos; i++){
+                nodes[i].secondTransfer(startTime);
+            }
+
+            for(int i = 0; i < npaxos; i++){
+                nodes[i].transferResult(2);
+            }
+
+            for(int i = 0; i < npaxos; i++){
+                startTime = System.currentTimeMillis();
+                for(int j = 0; j < npaxos; j++){
+                    nodes[j].agreeOn(i, startTime, 2);
+                }
+
+                try {
+                    Thread.sleep(500);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                for(int j = 0; j < npaxos; j++){
+                    nodes[j].getConsensus(i, 2);
+                }
+            }
+
+            int leader = -1;
+            for(int j = 0; j < npaxos; j++){
+                nodes[j].getTally();
+                if (!failNodes.contains(j)) leader = nodes[j].leader;
+            }
+
+
+            ArrayList<Double> result = KYScore.getExpectedAverageRank(goodBallot);
+            double rank  = result.get(leader);
+            int offset = 0;
+            for(int i = 0; i < result.size(); i++){
+                if (result.get(i) < rank) offset++;
+            }
+            offsets.add(offset);
+        }
+
+        int total = 0;
+        for(int i = 0; i < offsets.size(); i++){
+            total = total + offsets.get(i);
+        }
+
+        System.out.print(total);
+        return;
+    }
+
+    @Test
+    public void resultBetaScoreTest() {
+        final int npaxos = 16;
+        int key = 3;
+        int fail = 5;
+        int[] ranks = new int[key];
+        for (int i = 0; i< key; i ++) ranks[i] = i;
+        ArrayList<ArrayList<Integer>> allSet = PermutationUtil.permute(ranks);
+        ArrayList<Integer> offsets = new ArrayList<>();
+        ByzantineKing[] generals = initByzantineKings(npaxos, fail);
+
+        for(int testRun = 0; testRun <10; testRun ++){
+            ArrayList<ArrayList<Integer>> goodBallot = new ArrayList<>(new ArrayList<>());
+
+            ArrayList<Integer> failNodes = new ArrayList<Integer>();
+            while (failNodes.size() < fail){
+                int a = PermutationUtil.generateRandom(npaxos);
+                if(!failNodes.contains(a)) failNodes.add(a);
+            }
+
+            BetaNode[] nodes = new BetaNode[npaxos];
+            for(int i = 0; i < npaxos; i++){
+                ArrayList<Integer> newBallot = allSet.get(PermutationUtil.generateRandom(allSet.size()));
+                if (!failNodes.contains(i)){
+                    goodBallot.add(newBallot);
+                    generals[i].tag = 0 ;
+                } else {
+                    generals[i].tag = 1 ;
+                }
+                nodes[i] = new BetaNode(newBallot, generals[i], npaxos, i);
+            }
+
+            long startTime = System.currentTimeMillis();
+            for(int i = 0; i < npaxos; i++){
+                nodes[i].firstTransfer(startTime);
+            }
+
+            for(int i = 0; i < npaxos; i++){
+                nodes[i].transferResult(1);
+            }
+
+            for(int i = 0; i < npaxos; i++){
+                startTime = System.currentTimeMillis();
+                for(int j = 0; j < npaxos; j++){
+                    nodes[j].agreeOn(i, startTime, 1);
+                }
+
+                try {
+                    Thread.sleep(500);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                for(int j = 0; j < npaxos; j++){
+                    nodes[j].getConsensus(i, 1);
+                }
+            }
+
+            for(int j = 0; j < npaxos; j++){
+                nodes[j].getDiscard();
+            }
+
+            startTime = System.currentTimeMillis();
+            for(int i = 0; i < npaxos; i++){
+                nodes[i].secondTransfer(startTime);
+            }
+
+            for(int i = 0; i < npaxos; i++){
+                nodes[i].transferResult(2);
+            }
+
+            for(int i = 0; i < npaxos; i++){
+                startTime = System.currentTimeMillis();
+                for(int j = 0; j < npaxos; j++){
+                    nodes[j].agreeOn(i, startTime, 2);
+                }
+
+                try {
+                    Thread.sleep(500);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                for(int j = 0; j < npaxos; j++){
+                    nodes[j].getConsensus(i, 2);
+                }
+            }
+
+            int leader = -1;
+            for(int j = 0; j < npaxos; j++){
+                nodes[j].getTally();
+                if (!failNodes.contains(j)) leader = nodes[j].leader;
+            }
+
+
+            ArrayList<Double> result = KYScore.getExpectedAverageRank(goodBallot);
+            double rank  = result.get(leader);
+            int offset = 0;
+            for(int i = 0; i < result.size(); i++){
+                if (result.get(i) < rank) offset++;
+            }
+            offsets.add(offset);
+        }
+
+        int total = 0;
+        for(int i = 0; i < offsets.size(); i++){
+            total = total + offsets.get(i);
+        }
+
+        System.out.print(total);
+        return;
+    }
+
+    @Test
     public void permutationUtilTest() {
         int[] ranks = {1,2,3,4,5};
         ArrayList<ArrayList<Integer>> allSet = PermutationUtil.permute(ranks);
+        return;
+    }
+
+    @Test
+    public void SchemeTest() {
+        int len = 10;
+        for (int j = 3; j < 8; j++) {
+            System.out.println(j);
+            Double[] kscore = new Double[len];
+            Double[] bscore = new Double[len];
+            Double[] rscore = new Double[len];
+            for (int i = 0; i < len; i++) {
+                singleScheme(j, kscore, bscore, rscore, i);
+            }
+            System.out.println(Arrays.toString(kscore) + sum(kscore) / j / len);
+            System.out.println(Arrays.toString(bscore) + sum(bscore) / j / len);
+            System.out.println(Arrays.toString(rscore) + sum(rscore) / j / len);
+        }
+    }
+
+    public double sum(Double[] ds) {
+        int s = 0;
+        for (int i = 0; i < ds.length; i++) {
+            s += ds[i];
+        }
+        return s;
+    }
+
+    public void singleScheme(int key, Double[] kscore, Double[] bscore, Double[] rscore, int idx) {
+        final int npaxos = 16;
+        int fail = 5;
+        int[] ranks = new int[key];
+        for (int i = 0; i < ranks.length; i++) {
+            ranks[i] = i;
+        }
+
+        int range = 1;
+        for (int i = key; i > 0 ; i--) {
+            range = range * i;
+        }
+
+        ArrayList<ArrayList<Integer>> tbs = new ArrayList<>();
+        ArrayList<ArrayList<Integer>> allSet = PermutationUtil.permute(ranks);
+        for (int i = 0; i < npaxos; i++) {
+            tbs.add(allSet.get(PermutationUtil.generateRandom(range)));
+            //System.out.println("Ballot[" + i + "] is " + Arrays.toString(tbs.get(i).toArray()));
+        }
+
+        ArrayList<Double> position = KYScore.getExpectedAverageRank(tbs);
+        //System.out.println("Position: " + Arrays.toString(position.toArray()));
+        for (int i = 0; i < fail; i++) {
+            tbs.set(i, allSet.get(PermutationUtil.generateRandom(key)));
+        }
+
+        Integer[] kr = KYScore.getRank(ranks, tbs);
+        kscore[idx] = KYScore.getDefinedScore(kr, position);
+        //System.out.println("KY Score's result: " + Arrays.toString(kr) + "; score: "+ kscore[idx]);
+
+        int[][] bs = KYScore.transfer(tbs);
+        BordaCount b = new BordaCount(bs, key);
+        Integer[] br = b.getRank();
+        bscore[idx] = b.getDefinedScore(br, position);
+        //System.out.println("Borda Count's result: "+ Arrays.toString(br) + "; score: " + bscore[idx]);
+
+        bs = KYScore.transfer(tbs);
+        RankedPairs r = new RankedPairs(bs, key);
+        Integer[] rr = r.getRank();
+        rscore[idx] = r.getDefinedScore(rr, position);
+        //System.out.println("Ranked Pairs' result: " + Arrays.toString(rr) + "; score: " + rscore[idx]);
+
+
+
         return;
     }
 }
