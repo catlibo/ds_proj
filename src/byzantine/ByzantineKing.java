@@ -13,7 +13,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class ByzantineKing implements ByzantineKingRMI, Runnable{
 
     public final static int default_value = 0;
-    public final static int pulse = 200;
+    public final static int pulse = 20;
 
     ReentrantLock mutex;
     String[] peers; // hostname
@@ -195,7 +195,7 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
 
             while(this.startTime + pulse > System.currentTimeMillis()){
                 try {
-                    Thread.sleep(100);
+                    Thread.sleep(pulse/2);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -218,7 +218,7 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
 
             while(this.startTime + pulse > System.currentTimeMillis()){
                 try {
-                    Thread.sleep(100);
+                    Thread.sleep(pulse/2);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -239,7 +239,7 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
 
             while(this.startTime + pulse > System.currentTimeMillis()){
                 try {
-                    Thread.sleep(100);
+                    Thread.sleep(pulse/2);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -250,7 +250,7 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
 
             while(this.startTime + pulse > System.currentTimeMillis()){
                 try {
-                    Thread.sleep(100);
+                    Thread.sleep(pulse/2);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -327,7 +327,12 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
 
         for (int i = 0; i < this.peers.length; i++) {
             if (i != this.me) {
-                Request req = new Request(proposalValue, this.me, "Receive", 1);
+                Request req;
+                if (this.tag == 1) { //bad
+                    req = new Request(ByzantineKing.generateRandom(3), this.me, "Receive", 1);
+                } else {
+                    req = new Request(this.values.get(this.me), this.me, "Receive", 1);
+                }
                 Response rsp = this.Call("Receive", req, i);
             }
             else firstTransfer[i] = proposalValue;
@@ -335,7 +340,7 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
 
         while(transferTime + pulse > System.currentTimeMillis()){
             try {
-                Thread.sleep(100);
+                Thread.sleep(pulse/2);
             } catch (Exception e) {
                 e.printStackTrace();
             }

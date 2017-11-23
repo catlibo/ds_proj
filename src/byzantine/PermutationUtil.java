@@ -34,4 +34,8 @@ public class PermutationUtil {
         }
         return result;
     }
+
+    public static int generateRandom(int b) {
+        return (int) (Math.random() * b);
+    }
 }

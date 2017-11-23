@@ -41,4 +41,16 @@ public class KYScore {
         }
         return scores;
     }
+
+    public static ArrayList<Double> getExpectedAverageRank(ArrayList<ArrayList<Integer>> TotalBallot){
+        ArrayList<Double>  positions = new ArrayList<>();
+        for (int i = 0; i < TotalBallot.get(0).size(); i++){
+            int score = 0;
+            for (int j = 0; j < TotalBallot.size(); j++){
+                score += TotalBallot.get(j).indexOf(i);
+            }
+            positions.add((double) score/TotalBallot.size());
+        }
+        return positions;
+    }
 }
