@@ -171,6 +171,14 @@ public class RankedPairs {
         return scores;
     }
 
+    public Double getDefinedScore(Integer[] rank, ArrayList<Double> positions) {
+        Double scores = 0.0;
+        for (int j = 0; j < rank.length; j++){
+            scores = scores + Math.abs(j - positions.get(rank[j]));
+        }
+        return scores;
+    }
+
     public static void main(String[] args) {
         int[][] tbs = {{1,2,0}, {1,2,0}, {1,2,0}, {2,0,1}, {2,0,1}, {2,0,1}, {1,2,0}};
         RankedPairs r = new RankedPairs(tbs, 3);

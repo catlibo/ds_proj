@@ -1,5 +1,7 @@
 package election;
 
+import byzantine.KYScore;
+
 import java.util.*;
 
 /**
@@ -70,6 +72,16 @@ public class BordaCount {
             }
             positions.add((double) score/totalBallots.length);
         }
+        positions = KYScore.getExpectedAverageRank(KYScore.transfer(totalBallots));
+        for (int j = 0; j < rank.length; j++){
+            int a = rank[j];
+            scores = scores + Math.abs(j - positions.get(a));
+        }
+        return scores;
+    }
+
+    public Double getDefinedScore(Integer[] rank, ArrayList<Double> positions) {
+        double scores = 0;
         for (int j = 0; j < rank.length; j++){
             int a = rank[j];
             scores = scores + Math.abs(j - positions.get(a));

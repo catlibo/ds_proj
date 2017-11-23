@@ -1,9 +1,12 @@
 package byzantine;
 
+import election.BordaCount;
+import election.RankedPairs;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.stream.DoubleStream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -509,6 +512,78 @@ public class PaxosTest {
     public void permutationUtilTest() {
         int[] ranks = {1,2,3,4,5};
         ArrayList<ArrayList<Integer>> allSet = PermutationUtil.permute(ranks);
+        return;
+    }
+
+    @Test
+    public void SchemeTest() {
+        int len = 10;
+        for (int j = 3; j < 8; j++) {
+            System.out.println(j);
+            Double[] kscore = new Double[len];
+            Double[] bscore = new Double[len];
+            Double[] rscore = new Double[len];
+            for (int i = 0; i < len; i++) {
+                singleScheme(j, kscore, bscore, rscore, i);
+            }
+            System.out.println(Arrays.toString(kscore) + sum(kscore) / j / len);
+            System.out.println(Arrays.toString(bscore) + sum(bscore) / j / len);
+            System.out.println(Arrays.toString(rscore) + sum(rscore) / j / len);
+        }
+    }
+
+    public double sum(Double[] ds) {
+        int s = 0;
+        for (int i = 0; i < ds.length; i++) {
+            s += ds[i];
+        }
+        return s;
+    }
+
+    public void singleScheme(int key, Double[] kscore, Double[] bscore, Double[] rscore, int idx) {
+        final int npaxos = 16;
+        int fail = 5;
+        int[] ranks = new int[key];
+        for (int i = 0; i < ranks.length; i++) {
+            ranks[i] = i;
+        }
+
+        int range = 1;
+        for (int i = key; i > 0 ; i--) {
+            range = range * i;
+        }
+
+        ArrayList<ArrayList<Integer>> tbs = new ArrayList<>();
+        ArrayList<ArrayList<Integer>> allSet = PermutationUtil.permute(ranks);
+        for (int i = 0; i < npaxos; i++) {
+            tbs.add(allSet.get(PermutationUtil.generateRandom(range)));
+            //System.out.println("Ballot[" + i + "] is " + Arrays.toString(tbs.get(i).toArray()));
+        }
+
+        ArrayList<Double> position = KYScore.getExpectedAverageRank(tbs);
+        //System.out.println("Position: " + Arrays.toString(position.toArray()));
+        for (int i = 0; i < fail; i++) {
+            tbs.set(i, allSet.get(PermutationUtil.generateRandom(key)));
+        }
+
+        Integer[] kr = KYScore.getRank(ranks, tbs);
+        kscore[idx] = KYScore.getDefinedScore(kr, position);
+        //System.out.println("KY Score's result: " + Arrays.toString(kr) + "; score: "+ kscore[idx]);
+
+        int[][] bs = KYScore.transfer(tbs);
+        BordaCount b = new BordaCount(bs, key);
+        Integer[] br = b.getRank();
+        bscore[idx] = b.getDefinedScore(br, position);
+        //System.out.println("Borda Count's result: "+ Arrays.toString(br) + "; score: " + bscore[idx]);
+
+        bs = KYScore.transfer(tbs);
+        RankedPairs r = new RankedPairs(bs, key);
+        Integer[] rr = r.getRank();
+        rscore[idx] = r.getDefinedScore(rr, position);
+        //System.out.println("Ranked Pairs' result: " + Arrays.toString(rr) + "; score: " + rscore[idx]);
+
+
+
         return;
     }
 }
