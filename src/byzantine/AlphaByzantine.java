@@ -69,6 +69,10 @@ public class AlphaByzantine {
         System.out.println("Consistent ballots are "+ Arrays.toString(real_ballots) + ", election result is " + elect(real_ballots));
     }
 
+    public static void alphaAll(int[][] tbs) {
+
+    }
+
     public static int elect(int[] ballots) {
         Map<Integer, Integer> count = new HashMap<>();
         Integer cand = -1, num = 0;

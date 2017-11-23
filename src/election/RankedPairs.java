@@ -151,9 +151,36 @@ public class RankedPairs {
         return this.find();
     }
 
+    public Double getDefinedScore(Integer[] rank, int[][] totalBallots) {
+        ArrayList<Double>  positions = new ArrayList<>();
+        Double scores = 0.0;
+        for (int i = 0; i < totalBallots[0].length; i++){
+            int score = 0;
+            for (int j = 0; j < totalBallots.length; j++){
+                List<Integer> tmp = new ArrayList<>();
+                for (int index = 0; index < totalBallots[j].length; index++) {
+                    tmp.add(totalBallots[j][index]);
+                }
+                score = score + tmp.indexOf(i);
+            }
+            positions.add((double) score/totalBallots.length);
+        }
+        for (int j = 0; j < rank.length; j++){
+            scores = scores + Math.abs(j - positions.get(rank[j]));
+        }
+        return scores;
+    }
+
     public static void main(String[] args) {
-        int[][] tbs = {{1,2,0}, {1,2,0}, {1,0,2}, {1,2,0}, {2,0,1}, {2,0,1}, {2,0,1}};
+        int[][] tbs = {{1,2,0}, {1,2,0}, {1,2,0}, {2,0,1}, {2,0,1}, {2,0,1}, {1,2,0}};
         RankedPairs r = new RankedPairs(tbs, 3);
-        System.out.println(Arrays.toString(r.getRank()));
+        Integer[] rank = r.getRank();
+        System.out.println(Arrays.toString(rank));
+        System.out.println(r.getDefinedScore(rank, tbs));
+        int[][] tbs2 = {{2,1,0}, {2,1,0}, {2,1,0}, {0,1,2}, {0,1,2}};
+        RankedPairs r2 = new RankedPairs(tbs2, 3);
+        Integer[] rank2 = r2.getRank();
+        System.out.println(Arrays.toString(rank2));
+        System.out.println(r2.getDefinedScore(rank2, tbs2));
     }
 }
