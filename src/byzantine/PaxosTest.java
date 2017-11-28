@@ -313,7 +313,7 @@ public class PaxosTest {
     public void resultAlphaScoreTest() {
         final int npaxos = 16;
         int key = 7;
-        int fail = 5;
+        int fail = 3;
         int[] ranks = new int[key];
         for (int i = 0; i< key; i ++) ranks[i] = i;
         ArrayList<ArrayList<Integer>> allSet = PermutationUtil.permute(ranks);
