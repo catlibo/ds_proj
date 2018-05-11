@@ -95,7 +95,10 @@ public class PaxosTest {
         }
 
         for(int i = 0; i < npaxos; i++){
-            pxa[i] = new ByzantineKing(i, peers, ports, 0, 1, 0);
+            pxa[i] = new ByzantineKing(i, peers, ports, 0, 0);
+            if (i == 0 || i == 1) {
+                pxa[i].tag = 1;
+            }
         }
         return pxa;
     }
@@ -143,7 +146,7 @@ public class PaxosTest {
     @Test
     public void TestByzantineKing(){
 
-        final int npaxos = 5;
+        final int npaxos = 7;
         ByzantineKing[] generals = initByzantineKings(npaxos);
         long startTime = System.currentTimeMillis();
         for(int i = 0; i < npaxos; i++){
@@ -268,7 +271,7 @@ public class PaxosTest {
 
     @Test
     public void TestAlpha() {
-        int[] tops = {1,0,2,2,1,2,2};
+        int[] tops = {1,0,0,0,1,2,2};
         AlphaByzantine.alpha(tops, 1);
     }
 

@@ -43,7 +43,7 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
      * The hostnames of all the Byzantine peers (including this one)
      * are in peers[]. The ports are in ports[].
      */
-    public ByzantineKing(int me, String[] peers, int[] ports, int propose_value, int f, int tag){
+    public ByzantineKing(int me, String[] peers, int[] ports, int propose_value, int tag){
 
         this.me = me;
         this.peers = peers;
@@ -54,7 +54,7 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
 
         // Your initialization code here
         this.tag = tag;
-        this.f = f;
+        this.f = (this.peers.length - 1) / 3;
         this.phase = -1;
         this.my_value = propose_value;
         this.values = new ArrayList<>();
@@ -204,7 +204,7 @@ public class ByzantineKing implements ByzantineKingRMI, Runnable{
 
 
             Integer enoughInit = enoughInitial(this.values);
-            if(enoughInit!= null){
+            if(enoughInit!= null || this.tag == 1){
                 for (int i = 0; i < this.peers.length; i++) {
                     Request req;
                     if (this.tag == 1) { //bad
